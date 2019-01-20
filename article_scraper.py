@@ -1,5 +1,9 @@
 import re
+import urllib.parse
+
 import bs4
+
+import config
 
 
 class SearchState:
@@ -9,12 +13,14 @@ class SearchState:
 
 
 class ArticleScraper:
-    def __init__(self, content):
-        self.stop_tag_names = ['script', 'img', 'svg',
-                               'meta', 'link', 'nav', 'iframe']
-        self.container_tagnames = ['div', 'article', 'main', 'section']
+    def __init__(self, content, url):
+        self.stop_tag_names = config.stop_tag_names
+        self.container_tagnames = config.container_tagnames
         self.soup = bs4.BeautifulSoup(content, 'lxml')
+        self.title = self.soup.find('head').find('title').text
+        self.url = url
         self.cleanup_soup()
+        self.replace_relative_links_with_absolute()
 
     def cleanup_soup(self):
         """
@@ -23,6 +29,11 @@ class ArticleScraper:
         """
         for el in self.soup(self.stop_tag_names):
             el.extract()
+
+    def replace_relative_links_with_absolute(self):
+        for a in self.soup.find_all('a', href=True):
+            if a.get('href'):
+                a['href'] = urllib.parse.urljoin(self.url, a['href'])
 
     def find_node_with_biggest_sentences_count(self) -> bs4.Tag:
         """
@@ -62,5 +73,3 @@ class ArticleScraper:
                 if current_sentence_count > search_state.sentences_count:
                     search_state.sentences_count = current_sentence_count
                     search_state.found_tag = child
-
-
