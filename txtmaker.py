@@ -38,7 +38,8 @@ class TxtMaker:
         self._replace_html_tags_with_text()
         self._replace_br_tags_with_newlines()
         text = self._delete_unnecessary_newline_chars()
-        text = self._wrap_text(text)
         if self.title:
-            text = self.title + '\n\n' + text
+            text = self.title + '\n\n' + text.strip()
+        text = self._wrap_text(text)
+
         return text.strip()

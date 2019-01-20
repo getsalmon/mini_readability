@@ -4,13 +4,13 @@ markdown = False
 max_len = 80
 base_folder = 'articles'
 stop_tag_names = ['script', 'img', 'svg',
-                  'meta', 'link', 'nav', 'iframe']
+                  'meta', 'link', 'nav', 'iframe', 'style']
 container_tagnames = ['div', 'article', 'main', 'section']
-output_to_console = True
+output_to_console = False
 user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' \
              '(KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36'
 verbose = True
-
+filename_prohibited_symbols = ['<', '>', ':', '"', '/', '\\', '|', '?', '*']
 #################################
 
 common_rules = {'p': format_rules.TagFormatRules.rule_for_p,
