@@ -4,7 +4,7 @@ class TagFormatRules:
     """
     @staticmethod
     def rule_for_p(elem, soup):
-        TagFormatRules.add_new_line(elem, soup)
+        TagFormatRules._add_new_line(elem, soup)
 
     @staticmethod
     def rule_for_a(elem, _):
@@ -15,9 +15,9 @@ class TagFormatRules:
 
     @staticmethod
     def rule_for_header(elem, soup):
-        TagFormatRules.add_new_line(elem, soup)
+        TagFormatRules._add_new_line(elem, soup)
 
     @staticmethod
-    def add_new_line(elem, soup):
+    def _add_new_line(elem, soup):
         elem.insert_after(soup.new_tag('br'))
         elem.insert_after(soup.new_tag('br'))

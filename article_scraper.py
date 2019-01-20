@@ -14,6 +14,7 @@ class ArticleScraper:
                                'meta', 'link', 'nav', 'iframe']
         self.container_tagnames = ['div', 'article', 'main', 'section']
         self.soup = bs4.BeautifulSoup(content, 'lxml')
+        self.cleanup_soup()
 
     def cleanup_soup(self):
         """
@@ -23,42 +24,43 @@ class ArticleScraper:
         for el in self.soup(self.stop_tag_names):
             el.extract()
 
-    def find_best_tag_by_sentences_count(self) -> bs4.Tag:
+    def find_node_with_biggest_sentences_count(self) -> bs4.Tag:
         """
-        Будем идти максимально вглубь DOM и искать элементы обозначенных
-        выше тэгов с наиб. кол-вом предложений
-        Предложения будем искать регвыром
+        Будем искать узел в котором наибольшее количество предложений.
+        Узел при этом должен быть из пула тэгов self.container_tagnames
         :return:
         """
         body = self.soup.find('body')
         search_state = SearchState()
-        self.traverse_dom_and_search_tag(body, search_state)
+        self.search_for_tag_recursively(body, search_state)
         return search_state.found_tag
 
-    def traverse_dom_and_search_tag(self, root: bs4.Tag,
-                                    search_state: SearchState):
+    def search_for_tag_recursively(self, root: bs4.Tag,
+                                   search_state: SearchState):
         """
         Рекурсивный обход дерева
-        Максимально углубляемся в дерево. Если нашли нужный тэг,
-        то считаем в нем количество предложений и,
-        если оно больше текущего, запоминаем этот тэг как искомый
+        1. Рекурсивно ищем узлы из пула тэгов self.container_tagnames
+        2. Если узел не имеет потомков из пула self.container_tagnames,
+        то считаем в этом узле кол-во предложений и удаляем этот узел из DOM
+        3. Возращаемся в предка
+        4. Goto 2
 
         :param root: Корень, из которого будем производить поиск
         :param search_state: Состояние поиска
         :return:
         """
         # re для предложений
-        # https://stackoverflow.com/a/20320820
         sentence_regex = r"\s*[^.!?]*[.!?]"
 
-        for child in root.findChildren(recursive=False):
-            self.traverse_dom_and_search_tag(child, search_state)
+        for child in root.find_all(recursive=False):
+            self.search_for_tag_recursively(child, search_state)
             if child.name in self.container_tagnames:
-                current_tag = child.extract()
+
                 current_sentence_count = len(list(re.findall(sentence_regex,
                                                              child.text)))
+                child.extract()
                 if current_sentence_count > search_state.sentences_count:
                     search_state.sentences_count = current_sentence_count
-                    search_state.found_tag = current_tag
+                    search_state.found_tag = child
 
 
